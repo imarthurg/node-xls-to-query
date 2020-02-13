@@ -62,7 +62,7 @@ const getQuery = (woorksheet, tableName, columnNames, row) => {
 
   const cellRef = getCellRef(getCellAddress(row, 0));
   const cellValue = getValueParsed(woorksheet[cellRef]);
-  return `${queryWithSet} WHERE "${columnNames[0]} = ${cellValue};`;
+  return `${queryWithSet} WHERE "${columnNames[0]}" = ${cellValue};`;
 }
 
 /**
@@ -80,8 +80,12 @@ const generateSqlQueries = (sheetName, tableName) => {
     queries.push(getQuery(worksheet, tableName, columnNames, row));
   }
 
-  console.log(queries[0]);
-  return queries;
+  fs.writeFileSync(filePath + '.sql', '');
+  queries.forEach(q => {
+    fs.appendFileSync(filePath + '.sql', q + ' \n');
+  });
+
+  console.log('Done!');
 };
 
 /**
