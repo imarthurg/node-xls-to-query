@@ -1,0 +1,36 @@
+{
+  "name": "read-xls",
+  "version": "1.0.0",
+  "description": "script to read a xlsx file and generate SQL queries",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "test",
+    "commit": "git-cz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imarthurg/node-xls-to-query.git"
+  },
+  "keywords": [
+    "node",
+    "xls",
+    "csv",
+    "query",
+    "postgres",
+    "script"
+  ],
+  "author": "Arthur Silva",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/imarthurg/node-xls-to-query/issues"
+  },
+  "homepage": "https://github.com/imarthurg/node-xls-to-query#readme",
+  "dependencies": {
+    "jest": "^25.1.0",
+    "xlsx": "^0.15.5"
+  },
+  "devDependencies": {
+    "git-cz": "^4.3.1"
+  }
+}
