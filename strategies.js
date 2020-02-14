@@ -5,14 +5,14 @@ const getValueParsed = ({ v: value, t: type }) => {
     case 'n':
       return value;
     case 's':
-      return value === 'NULL' ? value : `'${value}'`;
+      return value === 'NULL' ? value : `'${value.replace(/'/g, '\'\'')}'`;
     case 'd':
       return new Date(value);
     default:
       return value;
-  } 
-}
+  }
+};
 
 module.exports = {
-  getValueParsed
-}
+  getValueParsed,
+};

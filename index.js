@@ -2,21 +2,20 @@ const XLSX = require('xlsx');
 const path = require('path');
 const fs = require('fs');
 const { getValueParsed } = require('./strategies');
+const { getCellRef, getCellAddress } = require('./lib/cell');
 
 const filePath = process.env.FILE_PATH || `${path.resolve('test.xlsx')}`;
 
-const getWorkbook = () => {
-  return XLSX.readFile(filePath, {});
-}
+const getWorkbook = () => XLSX.readFile(filePath, {});
 
 /**
  * Count how many cells was filled in sequence on the first row
- * 
- * @param {XLSX.Worksheet} worksheet 
+ *
+ * @param {XLSX.Worksheet} worksheet
  */
 const getColumnNames = (worksheet) => {
   const columnNames = [];
-  
+
   const row = 0;
 
   let col = 0;
@@ -27,7 +26,7 @@ const getColumnNames = (worksheet) => {
     } else {
       break;
     }
-    col++;
+    col += 1;
   }
 
   return columnNames;
@@ -42,72 +41,55 @@ const getDataRowsCount = (worksheet) => {
   }
 
   return row - 1; // desconsidering the title row
-}
+};
 
 const getQuery = (woorksheet, tableName, columnNames, row) => {
-  const shortName = tableName.slice(0, 1);
-  let query = `UPDATE public.${tableName} ${shortName} SET `;
+  const tableReference = `public.${tableName}`;
+  const query = `UPDATE ${tableReference} SET `;
   const queryWithSet = columnNames.reduce((accQuery, columnName, index) => {
+    let queryIncrement = accQuery;
     const cellRef = getCellRef(getCellAddress(row, index));
     const cellValue = getValueParsed(woorksheet[cellRef]);
 
     if (index !== 0 && index > 1) {
-      accQuery += `, ${shortName}."${columnName}" = ${cellValue}`;
+      queryIncrement += `, "${columnName}" = ${cellValue}`;
     } else if (index !== 0) {
-      accQuery += `${shortName}."${columnName}" = ${cellValue}`;
+      queryIncrement += `"${columnName}" = ${cellValue}`;
     }
 
-    return accQuery;
+    return queryIncrement;
   }, query);
 
   const cellRef = getCellRef(getCellAddress(row, 0));
   const cellValue = getValueParsed(woorksheet[cellRef]);
   return `${queryWithSet} WHERE "${columnNames[0]}" = ${cellValue};`;
-}
+};
 
 /**
- * 
- * @param {string} sheetName 
+ *
+ * @param {string} sheetName
  */
 const generateSqlQueries = (sheetName, tableName) => {
   const workbook = getWorkbook();
-  const worksheet = workbook['Sheets'][sheetName];
+  const worksheet = workbook.Sheets[sheetName];
   const columnNames = getColumnNames(worksheet);
   const dataRowsCount = getDataRowsCount(worksheet);
-  
+
   const queries = [];
-  for(let row = 1; row <= dataRowsCount; row++) {
+  for (let row = 1; row <= dataRowsCount; row += 1) {
     queries.push(getQuery(worksheet, tableName, columnNames, row));
   }
 
-  fs.writeFileSync(filePath + '.sql', '');
-  queries.forEach(q => {
-    fs.appendFileSync(filePath + '.sql', q + ' \n');
+  fs.writeFileSync(`${filePath}.sql`, '');
+  queries.forEach((q) => {
+    fs.appendFileSync(`${filePath}.sql`, `${q} \n`);
   });
 
   console.log('Done!');
 };
 
-/**
- * 
- * @param {number} row 
- * @param {number} column 
- * @returns XLSX.CellAddress
- */
-const getCellAddress = (row, column) => {
-  return { r: row, c: column };
-}
-
-/**
- * 
- * @param {XLSX.CellAddress} cellToCheck 
- */
-const getCellRef = (cellToCheck) => {
-  return XLSX.utils.encode_cell(cellToCheck);
-}
-
-generateSqlQueries('new_report_group', 'report_group');
+generateSqlQueries('new_input', 'input');
 
 module.exports = {
   getWorkbook,
-}
+};
